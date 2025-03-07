@@ -30,7 +30,7 @@ EXPOSE $PORT
 ###
 
 # Start FastAPI application
-ENTRYPOINT opentelemetry-instrument python3 main.py
+ENTRYPOINT ["opentelemetry-instrument", "python3", "main.py"]
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
     CMD curl --fail http://localhost:$PORT/health || exit 1
