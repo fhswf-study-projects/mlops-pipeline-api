@@ -1,7 +1,6 @@
 from typing import Any, List, Literal, Optional
 
 from pydantic import BaseModel, Field
-from celery import states
 
 
 class UserInputRequest(BaseModel):
@@ -14,10 +13,16 @@ class UserInputRequest(BaseModel):
         ..., description="Select your education."
     )
     educational_num: float = Field(
-        ..., ge=1, le=16, description="Insert your educational-num."
+        ...,
+        ge=1,
+        le=16,
+        description="Insert your educational-num.",
+        serialization_alias="educational-num",
     )
     marital_status: Literal["Married-civ-spouse", "Divorced"] = Field(
-        ..., description="Select your marital status."
+        ...,
+        description="Select your marital status.",
+        serialization_alias="marital-status",
     )
     occupation: Literal["Exec-managerial", "Craft-repair"] = Field(
         ..., description="Select your occupation."
@@ -27,6 +32,10 @@ class UserInputRequest(BaseModel):
     )
     race: Literal["Black", "White"] = Field(..., description="Select your race.")
     gender: Literal["Male", "Female"] = Field(..., description="Select your gender.")
+    capital_gain: float = Field(..., ge=0, serialization_alias="capital-gain")
+    capital_loss: float = Field(..., ge=0, serialization_alias="capital-loss")
+    hours_per_week: int = Field(..., ge=0, le=65, serialization_alias="hours-per-week")
+    native_country: str = Field(..., min_length=2, serialization_alias="native-country")
 
 
 class FileMetadataResponse(BaseModel):
@@ -35,5 +44,5 @@ class FileMetadataResponse(BaseModel):
 
 class AsyncTaskResponse(BaseModel):
     id: str
-    status: states
+    status: str
     result: Optional[Any] = None
