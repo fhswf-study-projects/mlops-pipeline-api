@@ -1,6 +1,6 @@
 import os
 
-from celery import Celery, chain
+from celery import Celery
 from celery.result import AsyncResult
 
 from app.constants import EnvConfig
@@ -32,12 +32,10 @@ class CeleryClient:
         return self._app
 
     def get_task(self, name: str, queue, *args, **kwargs):
-        return chain([self._app.signature(name, queue=queue, kwargs=kwargs)])
+        return self._app.signature(name, queue=queue, *args, **kwargs)
 
-    @staticmethod
-    def get_status(task_id: str):
-        return AsyncResult(task_id).status
+    def get_status(self, task_id: str):
+        return AsyncResult(task_id, app=self._app).status
 
-    @staticmethod
-    def get_result(task_id: str):
-        return AsyncResult(task_id).result
+    def get_result(self, task_id: str):
+        return AsyncResult(task_id, app=self._app).result
