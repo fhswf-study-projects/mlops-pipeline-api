@@ -16,6 +16,9 @@ psycopg2-binary = "^2.9.10"
 fastapi = {extras = ["standard"], version = "^0.115.8"}
 opentelemetry-distro = "^0.51b0"
 opentelemetry-exporter-otlp = "^1.30.0"
+sqlalchemy = "^2.0.38"
+joblib = "^1.4.2"
+pandas = "^2.2.3"
 
 
 [tool.poetry.group.dev]
@@ -27,6 +30,13 @@ pre-commit = "^4.1.0"
 coverage-badge = "^1.1.2"
 pyright = "^1.1.394"
 ruff = "^0.9.7"
+
+
+[tool.pytest.ini_options]
+addopts = "-v -s"
+testpaths = [
+    "tests",
+]
 
 [build-system]
 requires = ["poetry-core"]
