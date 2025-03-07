@@ -12,7 +12,6 @@ from app.routers.health import router as health_router
 
 
 logger = logging.getLogger(__name__)
-logger.warning("This is a warning from FastAPI App")
 
 app = FastAPI(
     title="pipeline-api",
@@ -34,13 +33,12 @@ app.include_router(api_router)
 
 if __name__ == "__main__":
     try:
-        logger.info("Hello from FastAPI!")
         uvicorn.run(
             app,
             host="0.0.0.0",
             port=int(os.environ[EnvConfig.PORT.value]),
             log_config=None,
-            reload=False
+            reload=False,
         )
     except KeyboardInterrupt:
         logger.info("Shutting Down: Process interrupeted")
