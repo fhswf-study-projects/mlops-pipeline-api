@@ -3,6 +3,10 @@ FROM python:3.11-slim
 WORKDIR /usr/src/app
 
 # Use this space for installing any system dependencies (like curl etc.)
+RUN apt-get update -y && \
+    apt-get install -y \
+    curl && \
+    rm -rf /var/lib/apt/lists/*
 ###
 
 # Install dependencies
