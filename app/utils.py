@@ -7,7 +7,7 @@ def retrieve_metadata(data: pd.DataFrame) -> str:
     metadata = {}
 
     for col in data.columns:
-        metadata[col] = data[col].dropna().unique().tolist()
+        metadata[col] = data[col].dropna().unique().tolist()  # type: ignore
     return json.dumps(metadata)
 
 
