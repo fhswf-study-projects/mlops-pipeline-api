@@ -5,8 +5,6 @@ import pandas as pd
 
 def retrieve_metadata(data: pd.DataFrame) -> str:
     metadata = {}
-    if not isinstance(data, pd.DataFrame):
-        return metadata
 
     for col in data.columns:
         metadata[col] = data[col].dropna().unique().tolist()
