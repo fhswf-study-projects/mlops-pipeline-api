@@ -25,15 +25,15 @@ class DataFactory:
         filename, extension = os.path.splitext(filename)
 
         if extension == ".csv":
-            return pd.read_csv(file_stream)
+            return pd.read_csv(file_stream)  # type: ignore
         elif extension in [".xls", ".xlsx"]:
             return pd.read_excel(file_stream, engine="openpyxl")
         elif extension == ".json":
             return pd.read_json(file_stream)
         elif extension == ".parquet":
             return pd.read_parquet(file_stream, engine="pyarrow")
-        else:
-            logger.error(
-                "Unsupported file format. Supported formats: CSV, Excel, JSON, Parquet."
-            )
-            return
+
+        logger.error(
+            "Unsupported file format. Supported formats: CSV, Excel, JSON, Parquet."
+        )
+        return
