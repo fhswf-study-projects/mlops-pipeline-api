@@ -90,6 +90,7 @@ jobs:
           cache-to: type=gha,mode=max
           secret-envs: |
             VIRTUAL_HOST=${{ secrets.VIRTUAL_HOST }}
+            LETSENCRYPT_HOST=${{ secrets.LETSENCRYPT_HOST }}
             VIRTUAL_PORT=${{ secrets.VIRTUAL_PORT }}
             PORT=${{ vars.PORT }}
             SWAGGER_DOCS_BASIC_AUTH_PASSWORD=${{ secrets.SWAGGER_DOCS_BASIC_AUTH_PASSWORD }}
