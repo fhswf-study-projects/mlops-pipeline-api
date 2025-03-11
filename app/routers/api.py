@@ -65,8 +65,12 @@ async def train_model(optimize_hyperparams: bool = False):
             }
         },
     )
-    res = task.apply_async()
-    return AsyncTaskResponse(id=res.id, status=str(res.state))
+    workflow_start = task.apply_async()
+
+    res_id = workflow_start.get()["result_task_id"]
+    res_state = celery_client.get_status(res_id)
+
+    return AsyncTaskResponse(id=res_id, status=str(res_state))
 
 
 # Do we really need async here?
