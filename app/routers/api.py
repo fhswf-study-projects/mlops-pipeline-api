@@ -1,13 +1,15 @@
 import os
 import logging
+from typing import Annotated
 
-from fastapi import APIRouter, File, HTTPException, UploadFile
+from fastapi import APIRouter, File, HTTPException, UploadFile, Depends
 
-from app.schemas import UserInputRequest, AsyncTaskResponse
-from app.constants import EnvConfig
+from app.middleware import get_bearer_token
 from app.core.data_factory import DataFactory
 from app.core.celery_client import CeleryClient
 from app.core.dvc_client import DVCClient
+from app.schemas import UserInputRequest, AsyncTaskResponse
+from app.constants import EnvConfig
 
 
 logger = logging.getLogger(__name__)
@@ -19,7 +21,11 @@ FILEPATH = "data.joblib"
 
 
 @router.post("/data-management/upload", tags=["Data Management"])
-async def file_upload(file: UploadFile = File(...), append: bool = False):
+async def file_upload(
+    _: Annotated[None, Depends(get_bearer_token)],
+    file: UploadFile = File(...),
+    append: bool = False,
+):
     dvc_client = DVCClient()
     try:
         contents = await file.read()
@@ -52,7 +58,9 @@ async def file_upload(file: UploadFile = File(...), append: bool = False):
 
 # Do we really need async here?
 @router.post("/models/train", tags=["Machine Learning"])
-async def train_model(optimize_hyperparams: bool = False):
+async def train_model(
+    _: Annotated[None, Depends(get_bearer_token)], optimize_hyperparams: bool = False
+):
     celery_client = CeleryClient()
     task = celery_client.get_task(
         name="workflows.model_training",
@@ -65,13 +73,19 @@ async def train_model(optimize_hyperparams: bool = False):
             }
         },
     )
-    res = task.apply_async()
-    return AsyncTaskResponse(id=res.id, status=str(res.state))
+    workflow_start = task.apply_async()
+
+    res_id = workflow_start.get()["result_task_id"]
+    res_state = celery_client.get_status(res_id)
+
+    return AsyncTaskResponse(id=res_id, status=str(res_state))
 
 
 # Do we really need async here?
 @router.post("/models/predict", tags=["Machine Learning"])
-async def predict(user_input: UserInputRequest):
+async def predict(
+    _: Annotated[None, Depends(get_bearer_token)], user_input: UserInputRequest
+):
     celery_client = CeleryClient()
     task = celery_client.get_task(
         name="workflows.make_prediction",
@@ -87,7 +101,9 @@ async def predict(user_input: UserInputRequest):
 
 
 @router.get("/tasks/check/{task_id}", tags=["Task Check"])
-def check_task(task_id: str) -> AsyncTaskResponse:
+def check_task(
+    _: Annotated[None, Depends(get_bearer_token)], task_id: str
+) -> AsyncTaskResponse:
     result = None
     celery_client = CeleryClient()
     status = str(celery_client.get_status(task_id))
