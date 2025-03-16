@@ -25,12 +25,8 @@ RUN opentelemetry-bootstrap -a install
 COPY . .
 ###
 
-# Open port(s) for internal communication only
-EXPOSE 8080
-###
-
 # Start FastAPI application
 ENTRYPOINT ["opentelemetry-instrument", "python3", "main.py"]
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-    CMD curl --fail http://localhost:8080/health || exit 1
+    CMD curl --fail http://localhost:$VIRTUAL_PORT/health || exit 1
