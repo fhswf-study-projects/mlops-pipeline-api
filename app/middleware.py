@@ -1,3 +1,6 @@
+"""Functionality checking bearer token on each request for predefined endpoints.
+In case the bearer token is not provided or invalid. Unauthorized HTTPException will be thrown."""
+
 import os
 import logging
 
