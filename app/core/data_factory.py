@@ -1,6 +1,6 @@
+import os
 import logging
 from io import BytesIO
-import os
 from typing import Union
 
 import pandas as pd
@@ -19,7 +19,7 @@ class DataFactory:
 
         :param filename: Original filename (used for format detection)
         :param file_bytes: File content in bytes
-        :return: Pandas DataFrame
+        :return: Pandas DataFrame or None if unsupported file format provided.
         """
         file_stream = BytesIO(file_bytes)
         filename, extension = os.path.splitext(filename)

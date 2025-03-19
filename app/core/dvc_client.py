@@ -35,7 +35,17 @@ class DVCClient:
             ],  # Use None for AWS S3, set URL for MinIO
         )
 
-    def read_data_from(self, source, bucket_name=None) -> Union[Any, None]:
+    def read_data_from(self, source: str, bucket_name=None) -> Union[Any, None]:
+        """Reads an object from a S3 bucket
+
+        Args:
+            source (str): Path under the object is available.
+            bucket_name (str, optional): Bucket name to upload to. Defaults to None.
+                If not provided, a default name from the environment space will be used.
+
+        Returns:
+            Union[Any, None]: Downloaded (python) object.
+        """
         obj = None
         if not bucket_name:
             bucket_name = os.environ[EnvConfig.S3_BUCKET_NAME.value]
@@ -49,14 +59,17 @@ class DVCClient:
             logger.error("Error in downloading file:", e)
         return obj
 
-    def save_data_to(self, obj, destination, bucket_name=None, extra_args={}) -> bool:
-        """Upload an object to an S3 bucket
+    def save_data_to(self, obj: Any, destination: str, bucket_name=None) -> bool:
+        """Upload an object to a S3 bucket
 
-        :param file_name: File to upload
-        :param bucket: Bucket to upload to
-        :param obj: Object to upload
-        :param object_name: S3 object name. If not specified then file_name is used
-        :return: True if file was uploaded, else False
+        Args:
+            obj (Any): Object to upload.
+            bucket_name (str, optional): Bucket name to upload to. Defaults to None.
+                If not provided, a default name from the environment space will be used.
+            destination (str): Location under the object should be saved.
+
+        Returns:
+           bool: True if file was uploaded, else False.
         """
         if not bucket_name:
             bucket_name = os.environ[EnvConfig.S3_BUCKET_NAME.value]
@@ -86,7 +99,6 @@ class DVCClient:
                     Filename=tmp.name,
                     Bucket=bucket_name,
                     Key=destination,
-                    # ExtraArgs=extra_args,
                 )
                 logger.warning(f"Response: {response}")
                 tmp.close()

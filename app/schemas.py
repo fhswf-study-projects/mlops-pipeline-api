@@ -1,3 +1,5 @@
+"""Define all needed Request/Response endpoints schemas here."""
+
 from typing import Any, List, Literal, Optional
 
 from pydantic import BaseModel, Field
