@@ -27,6 +27,7 @@ The following environment variables can be set:
 | `S3_ACCESS_KEY_ID`          | Access key id to access private s3-like bucket(s)        | None                     |
 | `S3_SECRET_ACCESS_KEY`      | Secret access key to access private s3-like bucket(s)    | None                     |
 
+[All needed environment variables can copied from the file.](.env.example)
 ## Usage
 
 ### Build and Run with Docker
