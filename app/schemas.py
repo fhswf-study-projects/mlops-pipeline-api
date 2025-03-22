@@ -150,7 +150,7 @@ class UserInputRequest(BaseModel):
 
 class FeedbackInputRequest(UserInputRequest):
     task_id: str
-    income: Literal["<=50K", ">50K"] = Field(+
+    income: Literal["<=50K", ">50K"] = Field(
                                              ..., description="Income class (true label)"
                                              )
 
