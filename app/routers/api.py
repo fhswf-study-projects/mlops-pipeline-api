@@ -84,7 +84,7 @@ async def upload_feedback(
 async def train_model(
     _: Annotated[None, Depends(get_bearer_token)],
     optimize_hyperparams: bool = False,
-    include_user_data=False,
+    include_user_data: bool = False,
 ):
     celery_client = CeleryClient()
     task = celery_client.get_task(
