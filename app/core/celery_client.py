@@ -1,9 +1,14 @@
+import logging
 import os
 
 from celery import Celery
 from celery.result import AsyncResult
 
 from app.constants import EnvConfig
+
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 class CeleryClient:

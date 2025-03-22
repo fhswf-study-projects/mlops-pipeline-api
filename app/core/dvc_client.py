@@ -12,6 +12,7 @@ from app.constants import EnvConfig
 
 
 logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 
 class DVCClient:
@@ -105,6 +106,6 @@ class DVCClient:
 
             logger.info(f"Uploaded {destination} to {bucket_name}")
         except (NoCredentialsError, ClientError) as e:
-            logger.error("Error in file upload:", e)
+            logger.error(f"Error in file upload: {e}")
             return False
         return True
