@@ -103,7 +103,7 @@ class UserInputRequest(BaseModel):
                                 serialization_alias="capital-loss")
     hours_per_week: int = Field(..., ge=0, le=65, description="Insert your hours per week you work at. 1-65",
                                 serialization_alias="hours-per-week")
-    native_country: Litral[
+    native_country: Literal[
         'United-States',
         'Peru',
         'Guatemala',
