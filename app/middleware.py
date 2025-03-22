@@ -11,6 +11,7 @@ from app.constants import EnvConfig
 
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 def get_bearer_token(
