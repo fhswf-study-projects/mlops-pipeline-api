@@ -40,6 +40,13 @@ class UserInputRequest(BaseModel):
     native_country: str = Field(..., min_length=2, serialization_alias="native-country")
 
 
+class FeedbackInputRequest(UserInputRequest):
+    task_id: str
+    income: Literal["<=50K", ">50K"] = Field(
+        ..., description="Income class (true label)"
+    )
+
+
 class FileMetadataResponse(BaseModel):
     columns: List[str]
 

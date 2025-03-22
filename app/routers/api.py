@@ -8,23 +8,24 @@ from app.middleware import get_bearer_token
 from app.core.data_factory import DataFactory
 from app.core.celery_client import CeleryClient
 from app.core.dvc_client import DVCClient
-from app.schemas import UserInputRequest, AsyncTaskResponse
+from app.schemas import UserInputRequest, FeedbackInputRequest, AsyncTaskResponse
 from app.constants import EnvConfig
 
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 router = APIRouter(prefix="/api")
 
 BUCKET = os.environ[EnvConfig.S3_BUCKET_NAME.value]
+FEEDBACK_PATH = "retrain.joblib"
 FILEPATH = "data.joblib"
 
 
-@router.post("/data-management/upload", tags=["Data Management"])
-async def file_upload(
+@router.post("/data-management/upload/file", tags=["Data Management"])
+async def upload_file(
     _: Annotated[None, Depends(get_bearer_token)],
     file: UploadFile = File(...),
-    append: bool = False,
 ):
     dvc_client = DVCClient()
     try:
@@ -35,7 +36,6 @@ async def file_upload(
                 status_code=422,
                 detail="Provided file is corrupt and can't be processed",
             )
-        logger.warning(f"Data read {str(type(df))}")
 
         if not dvc_client.save_data_to(obj=df, destination=FILEPATH):
             logger.exception("Data upload to s3-bucket storage failed")
@@ -46,20 +46,45 @@ async def file_upload(
     finally:
         await file.close()
 
+    logger.info(f"Uploaded file {filename} under {FILEPATH}")
     return {"status": "Upload successful", "reference_data_filename": FILEPATH}
 
 
-# @router.get("/data-management/metadata/get", tags=["Data Management"])
-# def get_metadata(filename: str) -> FileMetadataResponse:
-#     dvc_client = DVCClient()
-#     metadata = dvc_client.get_metadata(bucket=BUCKET, object_name=filename)
-#     return FileMetadataResponse(metadata)
+@router.post("/data-management/upload/feedback", tags=["Data Management"])
+async def upload_feedback(
+    _: Annotated[None, Depends(get_bearer_token)], feeback_input: FeedbackInputRequest
+):
+    dvc_client = DVCClient()
+    feeback_input_json = feeback_input.model_dump(by_alias=True)
+    try:
+        if (df := DataFactory.from_dict(feeback_input_json)) is None:
+            raise HTTPException(
+                status_code=422,
+                detail="Provided file is corrupt and can't be processed",
+            )
+
+        if (df_feedback := dvc_client.read_data_from(source=FEEDBACK_PATH)) is not None:
+            df = DataFactory.merge_dfs(df, df_feedback)
+
+        if dvc_client.save_data_to(obj=df, destination=FEEDBACK_PATH) is False:
+            logger.exception("Data upload to s3-bucket storage failed")
+            raise HTTPException(status_code=504, detail="File upload failed")
+    except Exception as e:
+        logger.exception(e)
+        raise HTTPException(status_code=500, detail="Something went wrong")
+
+    logger.info(
+        f"Uploaded feedback with id: {feeback_input_json['task_id']} under {FEEDBACK_PATH}"
+    )
+    return {"status": "Upload successful", "reference_data_filename": FEEDBACK_PATH}
 
 
 # Do we really need async here?
 @router.post("/models/train", tags=["Machine Learning"])
 async def train_model(
-    _: Annotated[None, Depends(get_bearer_token)], optimize_hyperparams: bool = False
+    _: Annotated[None, Depends(get_bearer_token)],
+    optimize_hyperparams: bool = False,
+    include_user_data=False,
 ):
     celery_client = CeleryClient()
     task = celery_client.get_task(
@@ -68,6 +93,8 @@ async def train_model(
         kwargs={
             "body": {
                 "optimize": optimize_hyperparams,
+                "include_user_data": include_user_data,
+                "feedback_path": FEEDBACK_PATH,
                 "filepath": FILEPATH,
                 "bucket": BUCKET,
             }
@@ -78,6 +105,7 @@ async def train_model(
     res_id = workflow_start.get()["result_task_id"]
     res_state = celery_client.get_status(res_id)
 
+    logger.info(f"Training workflow started with id: {res_id}")
     return AsyncTaskResponse(id=res_id, status=str(res_state))
 
 
@@ -87,16 +115,19 @@ async def predict(
     _: Annotated[None, Depends(get_bearer_token)], user_input: UserInputRequest
 ):
     celery_client = CeleryClient()
+    user_input_json = user_input.model_dump(by_alias=True)
+
     task = celery_client.get_task(
         name="workflows.make_prediction",
         queue="tasks",
-        kwargs={"body": {"data": user_input.model_dump(by_alias=True)}},
+        kwargs={"body": {"data": user_input_json}},
     )
     workflow_start = task.apply_async()
 
     res_id = workflow_start.get()["result_task_id"]
     res_state = celery_client.get_status(res_id)
 
+    logger.info(f"Prediction workflow started with id: {res_id}")
     return AsyncTaskResponse(id=res_id, status=str(res_state))
 
 
