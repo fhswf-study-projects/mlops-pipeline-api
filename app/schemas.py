@@ -12,7 +12,7 @@ class UserInputRequest(BaseModel):
         'Local-gov',
         'Self-emp-not-inc',
         'Federal-gov',
-        'State-gov'
+        'State-gov',
         'Self-emp-inc',
         'Without-pay',
         'Never-worked'
@@ -27,7 +27,7 @@ class UserInputRequest(BaseModel):
         'Assoc-acdm',
         'Some-college',
         '10th',
-        'Prof-school'
+        'Prof-school',
         '7th-8th',
         'Bachelors',
         'Masters',
@@ -151,8 +151,8 @@ class UserInputRequest(BaseModel):
 class FeedbackInputRequest(UserInputRequest):
     task_id: str
     income: Literal["<=50K", ">50K"] = Field(
-                                             ..., description="Income class (true label)"
-                                             )
+        ..., description="Income class (true label)"
+    )
 
 
 class FileMetadataResponse(BaseModel):
